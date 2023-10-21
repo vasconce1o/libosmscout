@@ -41,6 +41,9 @@ MapWidget::MapWidget(QQuickItem* parent)
     setOpaquePainting(true);
     setAcceptedMouseButtons(Qt::LeftButton);
     setAcceptHoverEvents(true);
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
+    setAcceptTouchEvents(true);
+#endif
 
     renderer = OSMScoutQt::GetInstance().MakeMapRenderer(renderingType);
     auto settings=OSMScoutQt::GetInstance().GetSettings();
