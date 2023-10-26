@@ -204,8 +204,8 @@ public slots:
   void zoomOut(double zoomFactor, const QPoint widgetPosition);
 
   void move(QVector2D vector);
-  void left();
-  void right();
+  void moveleft();
+  void moveRight();
   void up();
   void down();
 
@@ -490,6 +490,8 @@ public:
   void mouseMoveEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
   void hoverMoveEvent(QHoverEvent* event) override;
+
+  void mouseDoubleClickEvent(QMouseEvent *event) override;
 
   void paint(QPainter *painter) override;
 

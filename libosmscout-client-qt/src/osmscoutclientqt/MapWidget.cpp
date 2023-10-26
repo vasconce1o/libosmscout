@@ -113,7 +113,17 @@ void MapWidget::translateToTouch(QMouseEvent* event, Qt::TouchPointStates states
     touchPoint.setPos(event->pos());
     touchPoint.setState(states);
 #else
-    QEventPoint touchPoint(0, QEventPoint::Pressed, event->pos(), QPointF());
+    QEventPoint::State touchState;
+    switch (states) {
+    case Qt::TouchPointPressed:   touchState = QEventPoint::Pressed; break;
+    case Qt::TouchPointReleased:   touchState = QEventPoint::Released; break;
+    case Qt::TouchPointUnknownState:   touchState = QEventPoint::Unknown; break;
+    case Qt::TouchPointMoved:   touchState = QEventPoint::Updated; break;
+    case Qt::TouchPointStationary:   touchState = QEventPoint::Stationary; break;
+    default: touchState = QEventPoint::Pressed; break;
+    }
+
+    QEventPoint touchPoint(0, touchState, event->pos(), QPointF());
 #endif
 
     QList<QTouchEvent::TouchPoint> points;
@@ -146,6 +156,14 @@ void MapWidget::hoverMoveEvent(QHoverEvent* event) {
     getProjection().PixelToGeo(event->pos().x(), event->pos().y(), coord);
     emit mouseMove(event->pos().x(), event->pos().y(), coord.GetLat(), coord.GetLon(), event->modifiers());
 }
+
+void MapWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    translateToTouch(event, Qt::TouchPointReleased);
+    QPoint pos = QPoint((int)event->position().x(), (int)event->position().y());
+    zoomIn(2,pos);
+}
+
 void MapWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     if (event->button()==1) {
@@ -223,7 +241,7 @@ void MapWidget::touchEvent(QTouchEvent *event)
     tapRecognizer.touch(*event);
 
     if (!inputHandler->touch(*event)){
-        if (event->touchPoints().size() == 1){
+        if (event->points().size() == 1){
             setupInputHandler(new DragHandler(*view));
         }else{
             setupInputHandler(new MultitouchHandler(*view));
@@ -232,7 +250,7 @@ void MapWidget::touchEvent(QTouchEvent *event)
     }
 
     if (preventMouseStealing) {
-       int activePoints = std::count_if(event->touchPoints().begin(), event->touchPoints().end(),
+       int activePoints = std::count_if(event->points().begin(), event->points().end(),
                                         [](const auto &tp) { return tp.state() != Qt::TouchPointReleased; });
 
        if (activePoints == 0) {
@@ -475,12 +493,12 @@ void MapWidget::move(QVector2D vector)
     }
 }
 
-void MapWidget::left()
+void MapWidget::moveleft()
 {
     move(QVector2D( width()/-3, 0 ));
 }
 
-void MapWidget::right()
+void MapWidget::moveRight()
 {
     move(QVector2D( width()/3, 0 ));
 }
