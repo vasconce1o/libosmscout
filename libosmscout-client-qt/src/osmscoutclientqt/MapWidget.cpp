@@ -153,8 +153,8 @@ void MapWidget::hoverMoveEvent(QHoverEvent* event) {
     QQuickPaintedItem::hoverMoveEvent(event);
 
     osmscout::GeoCoord coord;
-    getProjection().PixelToGeo(event->pos().x(), event->pos().y(), coord);
-    emit mouseMove(event->pos().x(), event->pos().y(), coord.GetLat(), coord.GetLon(), event->modifiers());
+    getProjection().PixelToGeo(event->position().x(), event->position().y(), coord);
+    emit mouseMove(event->position().x(), event->position().y(), coord.GetLat(), coord.GetLon(), event->modifiers());
 }
 
 void MapWidget::mouseDoubleClickEvent(QMouseEvent *event)
@@ -389,10 +389,9 @@ void MapWidget::paint(QPainter *painter)
     // render marks
     if (!marks.isEmpty()){
         painter->setBrush(QBrush());
-        QPen pen;
-        pen.setColor(QColor::fromRgbF(0.8, 0.0, 0.0, 0.9));
-        pen.setWidth(6);
-        painter->setPen(pen);
+        QString url = QString(":/images/location-idle.svg");
+        QSvgRenderer svgRender;
+        svgRender.load(url);
 
         for (auto &entry: marks){
             osmscout::Vertex2D screenPos;
@@ -400,9 +399,10 @@ void MapWidget::paint(QPainter *painter)
                                   screenPos);
             if (boundingBox.contains(screenPos.GetX(), screenPos.GetY())){
                 double dimension = projection.ConvertWidthToPixel(6);
-                painter->drawEllipse(screenPos.GetX() - dimension/2,
-                                     screenPos.GetY() - dimension/2,
-                                     dimension, dimension);
+                QRectF rec(screenPos.GetX() - dimension/2,
+                           screenPos.GetY() - dimension/2,
+                           dimension, dimension);
+                svgRender.render(painter,rec);
             }
         }
     }
