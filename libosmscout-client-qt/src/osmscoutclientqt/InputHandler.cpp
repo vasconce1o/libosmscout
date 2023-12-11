@@ -80,8 +80,8 @@ void TapRecognizer::touch(const QTouchEvent &event)
     int x = finger.pos().x();
     int y = finger.pos().y();
 #else
-    int x = finger.scenePosition().x();
-    int y = finger.scenePosition().y();
+    int x = finger.position().x();
+    int y = finger.position().y();
 #endif
 
     // discard when PRESSED and registered another finger
@@ -508,7 +508,7 @@ bool ZoomGestureHandler::touch(const QTouchEvent &event)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   double zoom = (finger.pos().y() - double(gestureStart.y())) / zoomDistance;
 #else
-  double zoom = (finger.scenePosition().y() - double(gestureStart.y())) / zoomDistance;
+  double zoom = (finger.position().y() - double(gestureStart.y())) / zoomDistance;
 #endif
   if (zoom < 0){
     zoom = 1.0/(1.0+abs(zoom));
@@ -631,8 +631,8 @@ bool DragHandler::touch(const QTouchEvent &event)
             startX = finger.pos().x();
             startY = finger.pos().y();
 #else
-            startX = finger.scenePosition().x();
-            startY = finger.scenePosition().y();
+            startX = finger.position().x();
+            startY = finger.position().y();
 #endif
             fingerId = finger.id();
         }
@@ -646,8 +646,8 @@ bool DragHandler::touch(const QTouchEvent &event)
             startX - finger.pos().x(),
             startY - finger.pos().y()
 #else
-            startX - finger.scenePosition().x(),
-            startY - finger.scenePosition().y()
+            startX - finger.position().x(),
+            startY - finger.position().y()
 #endif
         ));
     }
@@ -655,7 +655,7 @@ bool DragHandler::touch(const QTouchEvent &event)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     moveAccumulator += finger.pos();
 #else
-    moveAccumulator += finger.scenePosition();
+    moveAccumulator += finger.position();
 #endif
 
     if (state.testFlag(Qt::TouchPointReleased)){
@@ -769,12 +769,12 @@ bool MultitouchHandler::touch(const QTouchEvent &event)
                 );
 #else
             QPointF startCenter(
-                (startPointA.scenePosition().x() + startPointB.scenePosition().x()) / 2,
-                (startPointA.scenePosition().y() + startPointB.scenePosition().y()) / 2
+                (startPointA.position().x() + startPointB.position().x()) / 2,
+                (startPointA.position().y() + startPointB.position().y()) / 2
                 );
             QPointF currentCenter(
-                (currentA.scenePosition().x() + currentB.scenePosition().x()) / 2,
-                (currentA.scenePosition().y() + currentB.scenePosition().y()) / 2
+                (currentA.position().x() + currentB.position().x()) / 2,
+                (currentA.position().y() + currentB.position().y()) / 2
                 );
 #endif
 
@@ -790,8 +790,8 @@ bool MultitouchHandler::touch(const QTouchEvent &event)
             QVector2D startVector(startPointA.pos() - startPointB.pos());
             QVector2D currentVector(currentA.pos() - currentB.pos());
 #else
-            QVector2D startVector(startPointA.scenePosition() - startPointB.scenePosition());
-            QVector2D currentVector(currentA.scenePosition() - currentB.scenePosition());
+            QVector2D startVector(startPointA.position() - startPointB.position());
+            QVector2D currentVector(currentA.position() - currentB.position());
 #endif
             double scale = 1;
             if (startVector.length() > 0){

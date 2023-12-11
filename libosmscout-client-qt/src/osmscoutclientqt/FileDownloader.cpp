@@ -126,7 +126,7 @@ void FileDownloader::startDownload()
           this, &FileDownloader::onNetworkReadyRead);
   connect(reply, &QNetworkReply::finished,
           this, &FileDownloader::onDownloaded);
-  connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
+  connect(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)),
           this, SLOT(onNetworkError(QNetworkReply::NetworkError)));
 
   timeoutTimer.start();

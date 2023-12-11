@@ -60,8 +60,9 @@ public:
 
   Q_INVOKABLE int inline rowCount(const QModelIndex &parent = QModelIndex()) const override
   {
+      Q_UNUSED(parent)
       return stylesheets.size();
-  };
+  }
 
   Q_INVOKABLE QVariant data(const QModelIndex &index, int role) const override;
   QHash<int, QByteArray> roleNames() const override;

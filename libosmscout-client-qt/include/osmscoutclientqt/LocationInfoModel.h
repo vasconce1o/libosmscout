@@ -88,10 +88,11 @@ public:
     LocationInfoModel();
     ~LocationInfoModel() override;
 
-    Q_INVOKABLE int inline rowCount(const QModelIndex &/*parent = QModelIndex()*/) const override
+    Q_INVOKABLE int inline rowCount(const QModelIndex &parent = QModelIndex()) const override
     {
+        Q_UNUSED(parent)
         return model.size();
-    };
+    }
     
     Q_INVOKABLE QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
@@ -100,7 +101,7 @@ public:
     bool inline isReady() const 
     {
         return ready;
-    };
+    }
     
     Q_INVOKABLE double distance(double lat1, double lon1, 
                                 double lat2, double lon2);

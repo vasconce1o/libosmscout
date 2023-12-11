@@ -113,7 +113,17 @@ void MapWidget::translateToTouch(QMouseEvent* event, Qt::TouchPointStates states
     touchPoint.setPos(event->pos());
     touchPoint.setState(states);
 #else
-    QEventPoint touchPoint(0, QEventPoint::Pressed, event->pos(), QPointF());
+    QEventPoint::State touchState;
+    switch (states) {
+    case Qt::TouchPointPressed:   touchState = QEventPoint::Pressed; break;
+    case Qt::TouchPointReleased:   touchState = QEventPoint::Released; break;
+    case Qt::TouchPointUnknownState:   touchState = QEventPoint::Unknown; break;
+    case Qt::TouchPointMoved:   touchState = QEventPoint::Updated; break;
+    case Qt::TouchPointStationary:   touchState = QEventPoint::Stationary; break;
+    default: touchState = QEventPoint::Pressed; break;
+    }
+
+    QEventPoint touchPoint(0, touchState, event->pos(), QPointF());
 #endif
 
     QList<QTouchEvent::TouchPoint> points;
@@ -143,9 +153,17 @@ void MapWidget::hoverMoveEvent(QHoverEvent* event) {
     QQuickPaintedItem::hoverMoveEvent(event);
 
     osmscout::GeoCoord coord;
-    getProjection().PixelToGeo(event->pos().x(), event->pos().y(), coord);
-    emit mouseMove(event->pos().x(), event->pos().y(), coord.GetLat(), coord.GetLon(), event->modifiers());
+    getProjection().PixelToGeo(event->position().x(), event->position().y(), coord);
+    emit mouseMove(event->position().x(), event->position().y(), coord.GetLat(), coord.GetLon(), event->modifiers());
 }
+
+void MapWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    translateToTouch(event, Qt::TouchPointReleased);
+    QPoint pos = QPoint((int)event->position().x(), (int)event->position().y());
+    zoomIn(2,pos);
+}
+
 void MapWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     if (event->button()==1) {
@@ -223,7 +241,7 @@ void MapWidget::touchEvent(QTouchEvent *event)
     tapRecognizer.touch(*event);
 
     if (!inputHandler->touch(*event)){
-        if (event->touchPoints().size() == 1){
+        if (event->points().size() == 1){
             setupInputHandler(new DragHandler(*view));
         }else{
             setupInputHandler(new MultitouchHandler(*view));
@@ -232,7 +250,7 @@ void MapWidget::touchEvent(QTouchEvent *event)
     }
 
     if (preventMouseStealing) {
-       int activePoints = std::count_if(event->touchPoints().begin(), event->touchPoints().end(),
+       int activePoints = std::count_if(event->points().begin(), event->points().end(),
                                         [](const auto &tp) { return tp.state() != Qt::TouchPointReleased; });
 
        if (activePoints == 0) {
@@ -371,10 +389,9 @@ void MapWidget::paint(QPainter *painter)
     // render marks
     if (!marks.isEmpty()){
         painter->setBrush(QBrush());
-        QPen pen;
-        pen.setColor(QColor::fromRgbF(0.8, 0.0, 0.0, 0.9));
-        pen.setWidth(6);
-        painter->setPen(pen);
+        QString url = QString(":/images/location-idle.svg");
+        QSvgRenderer svgRender;
+        svgRender.load(url);
 
         for (auto &entry: marks){
             osmscout::Vertex2D screenPos;
@@ -382,9 +399,10 @@ void MapWidget::paint(QPainter *painter)
                                   screenPos);
             if (boundingBox.contains(screenPos.GetX(), screenPos.GetY())){
                 double dimension = projection.ConvertWidthToPixel(6);
-                painter->drawEllipse(screenPos.GetX() - dimension/2,
-                                     screenPos.GetY() - dimension/2,
-                                     dimension, dimension);
+                QRectF rec(screenPos.GetX() - dimension/2,
+                           screenPos.GetY() - dimension/2,
+                           dimension, dimension);
+                svgRender.render(painter,rec);
             }
         }
     }
@@ -475,12 +493,12 @@ void MapWidget::move(QVector2D vector)
     }
 }
 
-void MapWidget::left()
+void MapWidget::moveleft()
 {
     move(QVector2D( width()/-3, 0 ));
 }
 
-void MapWidget::right()
+void MapWidget::moveRight()
 {
     move(QVector2D( width()/3, 0 ));
 }
