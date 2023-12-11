@@ -321,9 +321,11 @@ void LocationListModel::setPattern(const QString& pattern)
   
   // remove old items
   // TODO: remove only invalid items that don't match to new pattern
-  beginRemoveRows(QModelIndex(), 0, locations.size()-1);
-  locations.clear();
-  endRemoveRows();
+  if( locations.size() > 0){
+    beginRemoveRows(QModelIndex(), 0, locations.size()-1);
+    locations.clear();
+    endRemoveRows();
+  }
   emit countChanged(locations.size());
   postponedEntries.clear();
   postponeTimer.stop();
