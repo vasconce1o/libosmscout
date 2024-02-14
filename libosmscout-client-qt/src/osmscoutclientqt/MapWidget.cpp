@@ -352,7 +352,7 @@ void MapWidget::paint(QPainter *painter)
     }
 
     // render current position spot
-    if (showCurrentPosition && currentPosition.valid){
+    if (showCurrentPosition && currentPosition.valid && 1.0 > vehicleScaleFactor){
         osmscout::Vertex2D screenPos;
         projection.GeoToPixel(currentPosition.coord,
                               screenPos);
