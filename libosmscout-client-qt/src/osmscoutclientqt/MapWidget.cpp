@@ -352,7 +352,7 @@ void MapWidget::paint(QPainter *painter)
     }
 
     // render current position spot
-    if (showCurrentPosition && currentPosition.valid && 1.0 > vehicleScaleFactor){
+    if (showCurrentPosition && currentPosition.valid &&  0.5 > vehicleScaleFactor){
         osmscout::Vertex2D screenPos;
         projection.GeoToPixel(currentPosition.coord,
                               screenPos);
@@ -372,10 +372,10 @@ void MapWidget::paint(QPainter *painter)
 
             if (currentPosition.lastUpdate.secsTo(QDateTime::currentDateTime()) > 60) {
                 // outdated, use greyed green
-                painter->setBrush(QBrush(QColor::fromRgb(0x73, 0x8d, 0x73, 0x99)));
+                painter->setBrush(QBrush(QColor("#09cace")));
             }else{
                 // updated, use green
-                painter->setBrush(QBrush(QColor::fromRgb(0, 0xff, 0, 0x99)));
+                painter->setBrush(QBrush(QColor("#09cace")));
             }
             painter->setPen(QColor::fromRgbF(0.0, 0.5, 0.0, 0.9));
             double dimension = projection.ConvertWidthToPixel(2.8);
@@ -388,20 +388,30 @@ void MapWidget::paint(QPainter *painter)
 
     // render marks
     if (!marks.isEmpty()){
-        painter->setBrush(QBrush());
         QString url = QString(":/images/location-idle.svg");
         QSvgRenderer svgRender;
         svgRender.load(url);
 
+//        QPen pen;
+//        pen.setColor(QColor::fromRgbF(0.8, 0.0, 0.0, 0.9));
+//        pen.setWidth(6);
+//        painter->setPen(pen);
+
         for (auto &entry: marks){
-            osmscout::Vertex2D screenPos;
-            projection.GeoToPixel(osmscout::GeoCoord(entry.GetLat(), entry.GetLon()),
-                                  screenPos);
+            osmscout::Vertex2D screenPos{};
+            projection.GeoToPixel(osmscout::GeoCoord(entry.GetLat(), entry.GetLon()),screenPos);
             if (boundingBox.contains(screenPos.GetX(), screenPos.GetY())){
                 double dimension = projection.ConvertWidthToPixel(6);
+//              painter->drawEllipse(screenPos.GetX() - dimension/2,
+//                                     screenPos.GetY() - dimension/2,
+//                                     dimension, dimension);
+//              QPainter painter2;
+//              painter2.begin(&pixmap);
+//              painter2.drawPixmap(1, 1, pixmap);
+//              painter2.end();
+
                 QRectF rec(screenPos.GetX() - dimension/2,
-                           screenPos.GetY() - dimension/2,
-                           dimension, dimension);
+                           screenPos.GetY() - dimension/2, dimension, dimension);
                 svgRender.render(painter,rec);
             }
         }
@@ -718,7 +728,8 @@ void MapWidget::addOverlayObject(int id, QObject *o)
   }
   // create shared pointer copy
   if (obj->getObjectType()==osmscout::refWay){
-    copy = std::make_shared<OverlayWay>(static_cast<const OverlayWay&>(*obj));
+      copy = std::make_shared<OverlayWay>(static_cast<const OverlayWay&>(*obj));
+
   }else if (obj->getObjectType()==osmscout::refArea){
     copy = std::make_shared<OverlayArea>(static_cast<const OverlayArea&>(*obj));
   }else if (obj->getObjectType()==osmscout::refNode){
@@ -923,7 +934,7 @@ void MapWidget::loadVehicleIcons()
   double iconPixelSize=getProjection().ConvertWidthToPixel(vehicle.iconSize * vehicleScaleFactor);
   QString iconDirectory=OSMScoutQt::GetInstance().GetIconDirectory();
 
-  vehicle.standardIcon=loadSVGIcon(iconDirectory, vehicle.standardIconFile, iconPixelSize);
+  vehicle.standardIcon = loadSVGIcon(iconDirectory, vehicle.standardIconFile, iconPixelSize);
   vehicle.noGpsSignalIcon=loadSVGIcon(iconDirectory, vehicle.noGpsSignalIconFile, iconPixelSize);
   vehicle.inTunnelIcon=loadSVGIcon(iconDirectory, vehicle.inTunnelIconFile, iconPixelSize);
 }
