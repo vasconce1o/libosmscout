@@ -155,7 +155,42 @@ void AvailableMapsModel::listDownloaded(const MapProvider &provider, QNetworkRep
     fetchError=reply->errorString();
   }else{
     QByteArray downloadedData = reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(downloadedData);
+    QJsonDocument docTmp = QJsonDocument::fromJson(downloadedData);
+    QJsonArray root = docTmp.array();
+    //
+    // Start russia cable
+    //
+    int ruIndex = -1;
+    for (const QJsonValueRef ref: root){
+      ruIndex++;
+      if (!ref.isObject())
+        continue;
+      QJsonObject obj=ref.toObject();
+      auto dir=obj.value("dir");
+      auto name=obj.value("name");
+      if (!name.isString())
+        continue;
+      if (!dir.isString() && obj.value("map") == "russia"){
+        break;
+      }
+    }
+    if(ruIndex >= 0 && ruIndex < root.size()){
+      QJsonObject ruj = root[ruIndex].toObject();
+      ruj.insert("map", "russia/russia");
+      ruj.insert("directory", "rusia/rusia");
+      root.replace(ruIndex, ruj);
+      qDebug() << ruj;
+
+      QJsonObject russia;
+      russia.insert("dir", "russia");
+      russia.insert("name", "Russia");
+      root.append(russia);
+    }
+    QJsonDocument doc(root);
+    //
+    // End russia cable
+    //
+
     for (const QJsonValueRef ref: doc.array()){
       if (!ref.isObject())
         continue;
